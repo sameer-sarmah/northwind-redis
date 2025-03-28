@@ -19,10 +19,7 @@ import northwind.util.HttpMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class ProductsController {
@@ -31,13 +28,25 @@ public class ProductsController {
 	@Autowired
 	private ProductService productService;
 
-    @RequestMapping( value = "/products",method = RequestMethod.GET)
-	public List<Product> getProducts(HttpServletRequest request) {
-		return productService.getProducts();
-	}
+//    @RequestMapping( value = "/products",method = RequestMethod.GET)
+//	public List<Product> getProducts(HttpServletRequest request) {
+//		return productService.getProducts();
+//	}
 
-	@RequestMapping( value = "/product",method = RequestMethod.GET)
-	public Optional<Product> getProduct(HttpServletRequest request,@RequestParam String productId) {
+	@GetMapping( value = "/product/{productId}")
+	public Optional<Product> getProduct(HttpServletRequest request,@PathVariable String productId) {
 		return productService.getProduct(productId);
 	}
+
+	@PostMapping( value = "/product")
+	public void createProduct(HttpServletRequest request, @RequestBody Product product) {
+		 productService.upsertProduct(product);
+	}
+
+	@DeleteMapping( value = "/product/{productId}")
+	public void deleteProduct(HttpServletRequest request, @PathVariable String productId) {
+		productService.deleteProduct(productId);
+	}
+
+
 }
