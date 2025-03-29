@@ -1,29 +1,22 @@
 package northwind.controller;
 
-import java.lang.reflect.Type;
-import java.util.*;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
-
-import northwind.client.ApacheHttpClient;
-import northwind.exception.CoreException;
 import northwind.model.Product;
 import northwind.service.ProductService;
-import northwind.util.HttpMethod;
-
+import northwind.service.RedisProductService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 public class ProductsController {
 	final static Logger logger = LoggerFactory.getLogger(ProductsController.class);
+
+//	@Autowired
+//	private RedisProductService productService;
 
 	@Autowired
 	private ProductService productService;

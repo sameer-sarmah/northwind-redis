@@ -1,36 +1,21 @@
 package northwind.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import northwind.client.ApacheHttpClient;
-import northwind.exception.CoreException;
+import northwind.api.AbstractProductService;
 import northwind.model.Product;
-import northwind.util.HttpMethod;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
-public class ProductService {
+public class ProductService extends AbstractProductService {
 
     final static Logger logger = LoggerFactory.getLogger(ProductService.class);
-
-    private List<Product> products = new CopyOnWriteArrayList<>();
 /*
     //@Cacheable
     public List<Product> getProducts(String categoryId){
@@ -56,6 +41,7 @@ public class ProductService {
         return List.of();
     }
 */
+    @Override
     @Cacheable(value = "products", key="#productId")
     public Optional<Product> getProduct(String productId){
         logger.info("Retrieving product with id={}",productId);
@@ -71,6 +57,7 @@ public class ProductService {
         return retrievedProduct;
     }
 
+    @Override
     @CachePut(value = "products", key = "#product.ProductID")
     public Product upsertProduct(Product product) {
         logger.info("Updating product with id={}", product.getProductID());
@@ -80,6 +67,7 @@ public class ProductService {
         return product;
     }
 
+    @Override
     @CacheEvict(value = "products", key="#productId")
     public void deleteProduct(String productId) {
         logger.info("Deleting product with id={}", productId);
@@ -87,34 +75,7 @@ public class ProductService {
         products.removeIf(p -> p.getProductID().equals(productId));
     }
 
-    private List<Product>  getProducts() {
-        if(!CollectionUtils.isEmpty(products)){
-            return products;
-        }
-        else {
-            InputStream inputStream = ProductService.class.getClassLoader().getResourceAsStream("products.json");
-            if (inputStream != null) {
-                try {
-                    String json = IOUtils.toString(inputStream, Charset.defaultCharset());
-                    ObjectMapper objectMapper = new ObjectMapper();
-                    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-                    TypeReference<List<Product>> typeRef = new TypeReference<List<Product>>() {
-                    };
-                    List<Product> products = objectMapper.readValue(json, typeRef);
-                    synchronized (this) {
-                        products.stream().forEach(product -> {
-                            this.products.add(product);
-                        });
-                    }
-                    return products;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            return List.of();
-        }
 
-    }
 
 
 }
